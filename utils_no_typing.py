@@ -155,7 +155,7 @@ def precision_at_specific_recall(y_true, y_pred_proba, target_recall=0.8, tolera
     best_idx = valid_indices[np.argmax(precision[valid_indices])]
     return precision[best_idx], recall[best_idx]
 
-def get_patient_num_old(file: str) -> tuple[str,bool]:
+def get_patient_num_old(file):
     with open(file) as infile:
         data = json.load(infile)
         card = StringIO(data['medicalCard'])
@@ -174,7 +174,7 @@ def get_patient_num_old(file: str) -> tuple[str,bool]:
             return num, False
     infile.close()
         
-def get_patient_num_new(file: str) -> tuple[str,bool]:
+def get_patient_num_new(file):
     with open(file) as infile:
         data = json.load(infile)
         card = StringIO(data['medicalCard'])
@@ -186,7 +186,7 @@ def get_patient_num_new(file: str) -> tuple[str,bool]:
             return num, True
     infile.close()
         
-def load_data(dates: list[str] = DATES, path = PATH) -> list[tuple]:
+def load_data(dates = DATES, path = PATH):
     files = []
     date_search = dates
     exp_data = os.listdir(path)
@@ -208,7 +208,7 @@ def load_data(dates: list[str] = DATES, path = PATH) -> list[tuple]:
     
     return files
 
-def get_data_json(file: str) -> dict:
+def get_data_json(file):
     sensors = []
     with open(file[0]) as file_data:
         patient_data = json.load(file_data)
@@ -229,7 +229,7 @@ def get_data_json(file: str) -> dict:
     
     return np.vstack(sensors)"""
 
-def correct_data(files: list[tuple], corrections: list[tuple]) -> list[tuple]:
+def correct_data(files, corrections):
     corrected = []
     for file in files:
         found = False
@@ -282,7 +282,7 @@ def _htan_time(t, k0, k1, k2):
     T5 = 16*t**5 - 20*t**3 + 5*t
     return k0*T0 + k1*T1 - k2*T2 #+ k3*T5
 
-def fit_poly(y, t, num_par: int = 3):
+def fit_poly(y, t, num_par = 3):
     p0_logistic = [5000, 0.5, 0.0]  # [R0, Rmax, t50, k]
     # min_bounds = [0, 0, 0]
     # max_bounds = [10**5, 10**3, 10]
@@ -299,12 +299,12 @@ def fit_poly(y, t, num_par: int = 3):
     r2_logistic = r2_score(y, _htan_time(t, R0, Rmax, t50))
     return R_logistic_fit, r2_logistic, params_logistic, t_fit
 
-def get_data(dataset_json: dict, ids: list, start = START, end = END, 
+def get_data(dataset_json, ids, start = START, end = END, 
              sample_rate = SAMPLE_RATE, features = FEATURES, 
              trim = True, 
              filter = True,
              norm_sample = False,
-             delimeter:float = 1.0):
+             delimeter = 1.0):
     
     dataset = []
     for patient_id in ids:
@@ -351,7 +351,7 @@ def augmentSample(data, method = 'const_percent', seed = 42):
 
     return result
 
-def augmentData(data: np.ndarray, Y, method: str = 'average_sum', seed = 42):
+def augmentData(data, Y, method = 'average_sum', seed = 42):
 
     if isinstance(Y, pd.Series):
         Y = Y.values
@@ -434,10 +434,7 @@ def normalize_data(data):
 
     return data_scaled
 
-def featurize_series(data: np.ndarray, ind, method: str = 'logfit_2', aug_factor: int = 1):
-        
-        """For use only with graphormer and settings: scale True, filter False, norm False"""
-        medain_values = np.array([118.71836131,   0.96644375]) 
+def featurize_series(data, ind, method = 'logfit_2', aug_factor = 1):
 
         assert data.ndim == 1
 
@@ -450,9 +447,8 @@ def featurize_series(data: np.ndarray, ind, method: str = 'logfit_2', aug_factor
                 result = line1_par
 
             except RuntimeError:
-                #result = np.array([0] * num_par)
-                result = medain_values
-                print(f'Failed to feturize sample with index (not id): {ind}, using median values')
+                result = np.array([0] * num_par)
+                print(f'Failed to feturize sample with index (not id): {ind}')
 
             return result
         
@@ -488,7 +484,7 @@ def featurize_series(data: np.ndarray, ind, method: str = 'logfit_2', aug_factor
         else:       
             return
     
-def featurize_data(data, x, Y: np.ndarray, method = 'logfit_4', aug_factor: int = 1):
+def featurize_data(data, x, Y: np.ndarray, method = 'logfit_4', aug_factor = 1):
 
     n_samples, n_features, n_points = data.shape
     failed = []
@@ -582,12 +578,12 @@ def featurize_data(data, x, Y: np.ndarray, method = 'logfit_4', aug_factor: int 
     return x, Y"""
     
 def split_and_process(x, Y, data_save_dict, dataset, features = FEATURES, validation=False,
-                      split = 'strat', n_split_val:int = 5, n_split_test: int = 5, 
+                      split = 'strat', n_split_val = 5, n_split_test = 5, 
                       scale_pat = False, scale_batch = False, 
                       norm_patient = False, norm_sample = True, 
                       featurize = True, method = 'logfit_4',
-                      augment_data = False, augment_sample = False, aug_factor: int = 1,
-                      delimeter:float = 1.0):
+                      augment_data = False, augment_sample = False, aug_factor = 1,
+                      delimeter = 1.0):
     
     assert not (norm_patient and norm_sample)
     assert not (augment_sample and augment_data)
@@ -745,9 +741,9 @@ def _split_function(x, Y, split='strat', n_split=5):
 ### old version
 def split_and_process_old(x, Y, data_save_dict, dataset, features = FEATURES,
                       split = 'strat', scale = False, norm_patient = False, norm_sample = True, featurize = True, method = 'logfit_4',
-                      augment_data = False, augment_sample = False, aug_factor: int = 1, 
-                      n_split: int = 5, train: list = None, test: list = None,
-                      delimeter:float = 1.0):
+                      augment_data = False, augment_sample = False, aug_factor = 1, 
+                      n_split = 5, train = None, test = None,
+                      delimeter = 1.0):
     
     assert not (norm_patient and norm_sample)
     assert not (augment_sample and augment_data)
