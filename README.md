@@ -14,3 +14,5 @@ For run_exp_article_graphormer_valid.py use python 3.10.18 environment and ```pi
 ```python run_exp_article_catboost_valid.py```
 It will save the results into a csv file in the working directory.
 
+5) To run LSTM use lstm_baseline.py. Set json_path and label_path for json and csv files from dataset.
+
