@@ -114,7 +114,6 @@ class MultiChannelLSTM(nn.Module):
         self.num_layers = num_layers
         
         self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True, dropout=dropout_rate)
-        # У нас может быть полносвязный слой для получения конечного результата
         self.fc = nn.Linear(hidden_dim, output_dim)
         
     def forward(self, x):
